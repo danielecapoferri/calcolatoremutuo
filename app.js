@@ -629,12 +629,8 @@ $('#copyMail').addEventListener('click', async e => {
   const b = e.currentTarget, lbl = b.querySelector('.lbl');
   await copyText(CFG.email);
   clearTimeout(mailT);
-  lbl.classList.add('swap');
-  setTimeout(() => { lbl.innerHTML = '<span>Indirizzo copiato</span>'; b.classList.add('copied'); lbl.classList.remove('swap'); }, 160);
-  mailT = setTimeout(() => {
-    lbl.classList.add('swap');
-    setTimeout(() => { lbl.innerHTML = ICONS.mail + '<span>Copia indirizzo</span>'; b.classList.remove('copied'); lbl.classList.remove('swap'); }, 160);
-  }, CFG.copyFeedbackMs);
+  lbl.innerHTML = '<span>Indirizzo copiato</span>';   // cambio istantaneo, il bottone resta blu
+  mailT = setTimeout(() => { lbl.innerHTML = ICONS.mail + '<span>Copia indirizzo</span>'; }, CFG.copyFeedbackMs);
 });
 // Scarica l'app: su mobile apre lo store, da 768px in su apre la modale con QR
 (() => {

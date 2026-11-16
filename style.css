@@ -344,9 +344,8 @@ body.lock{overflow:hidden}
 .ccard p{font-size:14px;line-height:24px;color:var(--c-med)}
 .ccard .btn{margin-top:16px;height:40px;font-size:14px;width:100%}
 .ccard .btn svg{width:20px;height:20px}
-.btn .lbl{display:inline-flex;align-items:center;gap:8px;transition:opacity .2s,transform .25s var(--ease-out)}
+.btn .lbl{display:inline-flex;align-items:center;gap:8px}
 .btn .lbl.swap{opacity:0;transform:translateY(4px)}
-.btn.copied{background:var(--success-low);color:var(--success)}
 
 /* ---------- Modale / bottom sheet ---------- */
 .overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-end;justify-content:center;background:rgba(36,41,47,0);pointer-events:none;visibility:hidden;transition:background .3s,visibility 0s .45s}
