@@ -39,7 +39,7 @@
         <div class="field" data-field="reddito">
           <div class="label lg"><label for="reddito">Reddito mensile netto</label>
             <button type="button" class="info-btn" data-info="reddito" aria-label="Info reddito mensile netto"><svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.0001 18.3327C14.6025 18.3327 18.3334 14.6017 18.3334 9.99935C18.3334 5.39698 14.6025 1.66602 10.0001 1.66602C5.39771 1.66602 1.66675 5.39698 1.66675 9.99935C1.66675 14.6017 5.39771 18.3327 10.0001 18.3327Z" stroke="#6E7781" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 13.3333V10" stroke="#6E7781" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 6.66602H10.0083" stroke="#6E7781" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
-          <div class="control">
+          <div class="control has-suffix">
             <svg aria-hidden="true" focusable="false" class="lead" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10H16M4 14H13M19 6.00003C17.5771 4.70768 15.7222 3.99427 13.8 4.00003C12.7625 4.01308 11.7378 4.23037 10.7843 4.63949C9.83083 5.0486 8.96727 5.64153 8.24296 6.38442C7.51864 7.1273 6.94776 8.00559 6.56291 8.96913C6.17806 9.93266 5.98678 10.9626 6 12C6 16.4 9.5 20 13.8 20C15.8 20 17.6 19.2 19 18" stroke="#6E7781" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <input id="reddito" inputmode="numeric" placeholder="Es. 1.800" maxlength="9" aria-describedby="err-reddito">
             <span class="suffix" data-suffix>/mese</span>
@@ -243,8 +243,7 @@
 
 <div class="overlay" id="overlay" aria-hidden="true">
   <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-    <div class="grab" aria-hidden="true"></div>
-    <div class="sheet-head"><h2 id="sheetTitle"></h2><button type="button" class="x" id="sheetClose" aria-label="Chiudi"><svg aria-hidden="true" focusable="false" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18" stroke="#8C959F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 6L18 18" stroke="#8C959F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+        <div class="sheet-head"><h2 id="sheetTitle"></h2><button type="button" class="x" id="sheetClose" aria-label="Chiudi"><svg aria-hidden="true" focusable="false" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18" stroke="#8C959F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 6L18 18" stroke="#8C959F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     <div class="sheet-body" id="sheetBody"></div>
   </div>
 </div>

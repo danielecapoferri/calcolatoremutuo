@@ -320,7 +320,9 @@ function update({ anim = false, first = false } = {}) {
   const ab = $('#abar'); const tot = Math.max(1, r.necessario);
   ab.querySelector('.s').style.flexGrow = r.spese / tot;
   ab.querySelector('.c').style.flexGrow = r.anticipoCasa / tot;
-  ab.querySelector('.c').style.display = r.anticipoCasa > 0 ? '' : 'none';
+  ab.classList.toggle('zero', r.anticipoCasa <= 0);
+  ab.querySelector('.s').style.flexGrow = r.anticipoCasa > 0 ? r.spese / tot : 1;
+  ab.querySelector('.c').style.flexGrow = r.anticipoCasa > 0 ? r.anticipoCasa / tot : 0;
   const neg = r.diff < 0;
   $('#scnNeg').hidden = !neg; $('#scnPos').hidden = neg;
   if (neg) tween($('#missVal'), -r.diff, { dur, render: fmtEur });
@@ -503,13 +505,7 @@ document.addEventListener('keydown', e => {
     else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
   }
 });
-// swipe-down per chiudere il bottom sheet (mobile)
-(() => {
-  let y0 = null, dy = 0;
-  sheet.addEventListener('touchstart', e => { if (window.innerWidth >= 768 || sheet.classList.contains('share')) return; if ($('#sheetBody').scrollTop > 0 && !e.target.closest('.sheet-head,.grab')) return; y0 = e.touches[0].clientY; dy = 0; }, { passive: true });
-  sheet.addEventListener('touchmove', e => { if (y0 == null) return; dy = Math.max(0, e.touches[0].clientY - y0); if (dy > 0) { sheet.classList.add('dragging'); sheet.style.transform = `translateY(${dy}px)`; } }, { passive: true });
-  sheet.addEventListener('touchend', () => { if (y0 == null) return; sheet.classList.remove('dragging'); if (dy > 90) closeSheet(); else sheet.style.transform = ''; y0 = null; });
-})();
+
 
 /* ============================================================
    CONDIVIDI

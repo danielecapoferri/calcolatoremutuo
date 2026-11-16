@@ -60,7 +60,7 @@ body.lock{overflow:hidden}
 .info-btn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;color:var(--c-low);transition:color .2s,transform .2s var(--ease-spring)}
 .info-btn:hover{transform:scale(1.1)}
 .info-btn svg{width:20px;height:20px}
-.control{position:relative;display:flex;align-items:center;gap:8px;height:48px;padding:0 16px 0 12px;border:1px solid var(--border);border-radius:var(--r-field);
+.control{position:relative;display:flex;align-items:center;gap:8px;height:48px;padding:0 12px;border:1px solid var(--border);border-radius:var(--r-field);
   background:#fff;transition:border-color .18s,box-shadow .18s,background .18s}
 .control:hover{border-color:#aab4bf}
 .control:focus-within{border-color:var(--c-high);box-shadow:0 0 0 3px rgba(36,41,47,.06)}
@@ -73,6 +73,7 @@ body.lock{overflow:hidden}
 .control.filled .clear{display:grid;animation:popIn .2s var(--ease-out)}
 @keyframes popIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 .suffix{margin-left:auto}
+.control.has-suffix{padding-right:16px}
 .field.error .control{border-color:var(--error)}
 .field.error .control:focus-within{box-shadow:0 0 0 3px rgba(207,0,67,.08)}
 .err{font-size:14px;line-height:20px;color:var(--error);display:grid;grid-template-rows:0fr;transition:grid-template-rows .22s var(--ease-out),opacity .22s;opacity:0;margin-top:-8px}
@@ -156,7 +157,7 @@ body.lock{overflow:hidden}
   transform:scale(.4) rotate(-20deg);opacity:0;transition:transform .6s var(--ease-spring) .25s,opacity .3s .25s}
 .has-result .mascot{transform:none;opacity:1}
 .mascot-in{position:relative;width:90.91%;height:90.91%;border-radius:50%;overflow:hidden}
-.mascot-in img{position:absolute;left:-38.44%;top:-26.7%;width:182.5%;height:auto;max-width:none;display:block}
+.mascot-in img{position:absolute;left:-44.23%;top:-32.01%;width:199.23%;height:auto;max-width:none;display:block}
 .price-card{position:relative;z-index:1;padding:20px;display:flex;flex-direction:column;gap:24px;transition:margin-top .5s var(--ease-out)}
 .has-result .price-card{margin-top:-44px}
 .pc-head{display:flex;flex-direction:column;gap:8px}
@@ -254,9 +255,12 @@ body.lock{overflow:hidden}
 .lbl-d{display:none}
 .abar{display:flex;gap:8px;height:16px;align-items:center}
 .abar i{display:block;height:8px;border-radius:100px;transition:flex-grow .6s var(--ease-out),opacity .3s;min-width:8px;flex-basis:0}
+.abar.zero .c{flex:0 0 8px;width:8px}
 .abar .s{background:var(--b100)}.abar .c{background:var(--b200)}
 .abar.miss{position:relative}
 .scn{border-top:1px solid var(--border-static);padding-top:16px;display:flex;flex-direction:column;gap:20px}
+.scn.neg{display:flex;gap:6px}
+.scn100{display:flex;flex-direction:column;gap:6px}
 .rim{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:16px;line-height:26px;color:var(--c-med)}
 .rim .k{display:flex;align-items:center;gap:6px}
 .rim .v{color:var(--c-high);font-weight:500}
@@ -295,7 +299,7 @@ body.lock{overflow:hidden}
 .fb-wrap > .inner{min-height:0;overflow:hidden}
 .fb-wrap.gone{grid-template-rows:0fr;opacity:0}
 .fb{max-width:644px;margin:0 auto;padding:40px 2px 2px;text-align:center;display:flex;justify-content:center}
-.fb-step{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;animation:fadeIn .35s var(--ease-out) both}
+.fb-step{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:100%;animation:fadeIn .35s var(--ease-out) both}
 .fb-step[hidden]{display:none}
 .fb-title{margin:0;font-size:18px;line-height:28px;font-weight:500;color:var(--c-high)}
 .fb-btns{display:flex;gap:12px}
@@ -347,11 +351,11 @@ body.lock{overflow:hidden}
 /* ---------- Modale / bottom sheet ---------- */
 .overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-end;justify-content:center;background:rgba(36,41,47,0);pointer-events:none;visibility:hidden;transition:background .3s,visibility 0s .45s}
 .overlay.open{background:rgba(36,41,47,.45);pointer-events:auto;visibility:visible;transition:background .3s}
-.sheet{background:#fff;width:100%;max-height:88vh;display:flex;flex-direction:column;border-radius:20px 20px 0 0;transform:translateY(100%);
+.sheet{background:#fff;width:100%;max-height:88vh;display:flex;flex-direction:column;border-radius:10px 10px 0 0;transform:translateY(100%);
   transition:transform .42s var(--ease-out);padding-bottom:env(safe-area-inset-bottom,0px);touch-action:pan-y}
 .overlay.open .sheet{transform:none}
 .sheet.dragging{transition:none}
-.grab{width:36px;height:4px;border-radius:4px;background:var(--border);margin:8px auto 0}
+.grab{display:none}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 24px;border-bottom:1px solid var(--border-static)}
 .sheet-head h2{margin:0;font-size:16px;line-height:26px;font-weight:500;color:var(--c-high);display:flex;align-items:center;gap:6px}
 .sheet-head h2 svg{width:20px;height:20px;color:var(--success)}
@@ -422,7 +426,10 @@ body.lock{overflow:hidden}
   .scn{flex-direction:row;align-items:center;justify-content:space-between;gap:16px}
   .useall{background:transparent!important;padding:0;justify-content:flex-end;gap:12px}
   .useall.on{color:var(--primary)}
-  .scn.neg{display:block}
+  .scn.neg{display:flex;flex-direction:column;align-items:flex-start;gap:0}
+  .scn100{gap:0}
+  .abar i{height:10px}
+  .abar.zero .c{flex-basis:10px;width:10px}
   .tipo{padding:24px 32px}
   .tipo .k{font-size:14px;line-height:24px}
   .tipo .v{font-size:20px;line-height:32px}
@@ -491,4 +498,35 @@ body.lock{overflow:hidden}
 @media (min-width:1024px){
   .calc-grid{display:grid;grid-template-columns:minmax(0,486fr) minmax(0,588fr)}
   .form-card,.output{flex:none}
+}
+
+/* touch: nessun hover né effetti di pressione sui bottoni */
+*{-webkit-tap-highlight-color:transparent}
+@media (hover:none){
+  .btn-small:hover{background:var(--primary-low)}
+  .how:hover{color:var(--c-low)}
+  .info-btn:hover{transform:none}
+  .control:hover{border-color:var(--border)}
+  .field.error .control:hover{border-color:var(--error)}
+  .control:focus-within{border-color:var(--c-high)}
+  .ac-list li:hover{background:none}
+  .ac-list li[aria-selected="true"]{background:var(--alt)}
+  .seg button:hover{background:#fff}
+  .seg button[aria-checked="true"]:hover{background:var(--primary)}
+  .btn-red:hover{background:var(--red)}
+  .btn-blue-low:hover{background:var(--primary-low)}
+  .btn:hover .arrow,.cta-card:hover .arrow{transform:none}
+  .share-btn:hover svg{transform:none}
+  .lnk:hover{color:var(--c-med)}
+  .cta-card:hover{transform:none;box-shadow:var(--shadow-cool)}
+  .cta-card:hover .btn{background:var(--red)}
+  .fb-btn:hover{background:#fff}
+  .fb-send:hover{background:var(--primary-low)}
+  .share-acts button:hover .ic,.share-acts a:hover .ic{transform:none;background:var(--primary-low)}
+  .btn:active,.fb-btn:active,.fb-send:active{transform:none}
+  .switch input:active:not(:disabled) ~ .knob{width:20px}
+  .switch input:checked:active:not(:disabled) ~ .knob{transform:translateX(14px)}
+}
+@media (hover:none) and (min-width:768px){
+  .cta-card:hover .btn{background:var(--primary-low)}
 }
