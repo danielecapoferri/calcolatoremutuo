@@ -55,7 +55,7 @@ body.lock{overflow:hidden}
 .how:hover{color:var(--c-high)}
 .fields{display:flex;flex-direction:column;gap:16px}
 .field{display:flex;flex-direction:column;gap:8px;position:relative}
-.label{display:flex;align-items:center;gap:6px;font-size:14px;line-height:24px;color:var(--c-high)}
+.label{display:flex;align-items:center;gap:6px;font-size:16px;line-height:26px;color:var(--c-high)}
 .label.lg{font-size:16px;line-height:26px}
 .info-btn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;color:var(--c-low);transition:color .2s,transform .2s var(--ease-spring)}
 .info-btn:hover{transform:scale(1.1)}
@@ -164,8 +164,8 @@ body.lock{overflow:hidden}
 .pc-title .t{display:flex;align-items:center;gap:6px;font-size:16px;line-height:26px;font-weight:500}
 .pc-title .t .info-btn{display:none}
 .is-mq .pc-title .t .info-btn{display:inline-grid}
-.fire{display:inline-block;transform:scale(0);transition:transform .45s var(--ease-spring);margin-left:2px}
-.used-all .fire{transform:scale(1)}
+.fire{display:none;margin-left:2px}
+.used-all .fire{display:inline-block;animation:popIn .35s var(--ease-spring)}
 .unit-sw{position:relative;display:flex;align-items:center;gap:4px;padding:3px;height:40px;border:1px solid var(--border);border-radius:100px;background:#fff}
 .unit-sw .ind{position:absolute;top:3px;left:3px;width:44px;height:32px;border-radius:100px;background:var(--primary);transition:transform .25s var(--ease-out)}
 .unit-sw.is-mq .ind{transform:translateX(40px)}
@@ -355,8 +355,8 @@ body.lock{overflow:hidden}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 24px;border-bottom:1px solid var(--border-static)}
 .sheet-head h2{margin:0;font-size:16px;line-height:26px;font-weight:500;color:var(--c-high);display:flex;align-items:center;gap:6px}
 .sheet-head h2 svg{width:20px;height:20px;color:var(--success)}
-.x{width:24px;height:24px;display:grid;place-items:center;border-radius:50%;color:var(--c-med);transition:background .2s,transform .3s var(--ease-out)}
-.x:hover{background:var(--alt);transform:rotate(90deg)}
+.x{cursor:pointer;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;color:var(--c-med);}
+
 .x svg{width:24px;height:24px}
 .sheet-body{padding:24px 24px 24px;overflow:auto;font-size:14px;line-height:24px;color:var(--c-med)}
 .sheet-body p + p,.sheet-body ul + p{margin-top:24px}
@@ -368,8 +368,8 @@ body.lock{overflow:hidden}
 .overlay.open .sheet.share{transform:none;opacity:1}
 .sheet.share .grab,.sheet.share .sheet-head{display:none}
 .sheet.share .sheet-body{padding:0;overflow:visible}
-.share-x{position:absolute;top:16px;right:16px;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;transition:transform .3s var(--ease-out)}
-.share-x:hover{transform:rotate(90deg)}
+.share-x{cursor:pointer;position:absolute;top:16px;right:16px;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;}
+
 .share-body{display:flex;flex-direction:column;align-items:center;gap:32px}
 .share-content{display:flex;flex-direction:column;align-items:center;gap:24px;width:100%}
 .share-copy{display:flex;flex-direction:column;gap:4px;padding:0 32px;text-align:center;width:100%}
@@ -482,4 +482,13 @@ body.lock{overflow:hidden}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
+/* scenario mutuo 100%: riga divisoria come da Figma */
+.scn100{border-top:1px solid var(--border-static);padding-top:16px;margin-top:8px}
+.scn100 .lnk{display:inline}
+.scn100 .note{text-wrap:pretty}
+@media (min-width:1024px){
+  .calc-grid{display:grid;grid-template-columns:minmax(0,486fr) minmax(0,588fr)}
+  .form-card,.output{flex:none}
 }

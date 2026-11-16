@@ -4,7 +4,7 @@
    CONFIG
    ============================================================ */
 const CFG = {
-  rrrMin: 25, rrrMax: 40, rrrDefault: 30,
+  rrrMin: 20, rrrMax: 40, rrrDefault: 30,
   ltvStd: 0.80, soglia100: 5000,        // anticipo < 5.000€ → LTV 100%
   sogliaElevato: 10000,                 // "Usa tutto l'anticipo" se il prezzo sale di almeno 10k
   greenSconto: 0.2,                     // punti di tasso in meno per immobile green
@@ -405,7 +405,7 @@ function geo() {
   const gap = parseFloat(getComputedStyle(track).columnGap) || 8;
   const b1 = z1.offsetWidth + gap / 2;                  // confine verde/arancio (30%)
   const b2 = z2.offsetLeft + z2.offsetWidth + gap / 2;   // confine arancio/rosso (35%)
-  return [{ x0: R_PTR, x1: b1, v0: 25, v1: 30 }, { x0: b1, x1: b2, v0: 30, v1: 35 }, { x0: b2, x1: W - R_PTR, v0: 35, v1: 40 }];
+  return [{ x0: R_PTR, x1: b1, v0: 20, v1: 30 }, { x0: b1, x1: b2, v0: 30, v1: 35 }, { x0: b2, x1: W - R_PTR, v0: 35, v1: 40 }];
 }
 const v2x = v => { const Z = geo(); const z = Z.find(z => v <= z.v1) || Z[2]; return z.x0 + (v - z.v0) / (z.v1 - z.v0) * (z.x1 - z.x0); };
 const x2v = x => { const Z = geo(); x = Math.min(Z[2].x1, Math.max(Z[0].x0, x)); const z = Z.find(z => x <= z.x1) || Z[2]; return z.v0 + (x - z.x0) / (z.x1 - z.x0) * (z.v1 - z.v0); };
@@ -563,7 +563,7 @@ function loadFromUrl() {
   const d = +p.get('durata'); if ([10, 15, 20, 25, 30, 35, 40].includes(d)) setDurata(d);
   if (p.get('tasso')) els.tasso.value = String(p.get('tasso')).replace('.', ',');
   els.green.checked = p.get('green') === '1';
-  if (p.get('rrr')) S.rrr = Math.min(40, Math.max(25, +p.get('rrr')));
+  if (p.get('rrr')) S.rrr = Math.min(CFG.rrrMax, Math.max(CFG.rrrMin, +p.get('rrr')));
   S.useAll = p.get('tutto') === '1';
   if (p.get('vista') === 'mq') { S.unit = 'mq'; $$('button', unitSw).forEach(x => x.setAttribute('aria-checked', x.dataset.u === 'mq')); unitSw.classList.add('is-mq'); }
   [els.reddito, els.anticipo, els.tasso].forEach(syncFilled);
@@ -614,6 +614,7 @@ $('#faqList').innerHTML = FAQ.map(([q, a], i) => `
 $('#faqList').addEventListener('click', e => {
   const q = e.target.closest('.faq-q'); if (!q) return;
   const it = q.parentElement, open = !it.classList.contains('open');
+  $$('.faq-item.open').forEach(o => { if (o !== it) { o.classList.remove('open'); o.querySelector('.faq-a').classList.remove('open'); o.querySelector('.faq-q').setAttribute('aria-expanded', 'false'); } });
   it.classList.toggle('open', open); it.querySelector('.faq-a').classList.toggle('open', open); q.setAttribute('aria-expanded', open);
 });
 
