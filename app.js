@@ -370,6 +370,7 @@ unitSw.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b || !S.applied || S.unit === b.dataset.u) return;
   S.unit = b.dataset.u;
   $$('button', unitSw).forEach(x => x.setAttribute('aria-checked', x === b));
+  unitSw.classList.toggle('is-mq', S.unit === 'mq');
   const fadeEls = S.unit === 'mq' ? [els.tipoCard] : [els.mutuoCard, els.antCard];
   update({ anim: true });
   fadeEls.forEach(el => { el.classList.remove('fade-in'); void el.offsetWidth; el.classList.add('fade-in'); });
@@ -564,7 +565,7 @@ function loadFromUrl() {
   els.green.checked = p.get('green') === '1';
   if (p.get('rrr')) S.rrr = Math.min(40, Math.max(25, +p.get('rrr')));
   S.useAll = p.get('tutto') === '1';
-  if (p.get('vista') === 'mq') { S.unit = 'mq'; $$('button', unitSw).forEach(x => x.setAttribute('aria-checked', x.dataset.u === 'mq')); }
+  if (p.get('vista') === 'mq') { S.unit = 'mq'; $$('button', unitSw).forEach(x => x.setAttribute('aria-checked', x.dataset.u === 'mq')); unitSw.classList.add('is-mq'); }
   [els.reddito, els.anticipo, els.tasso].forEach(syncFilled);
   if (d !== CFG.durataDefault || els.green.checked || (p.get('tasso') && +p.get('tasso') !== CFG.tassoDefault)) setAdv(true);
   const { ok, v } = validate(false);
@@ -581,15 +582,16 @@ function loadFromUrl() {
 /* ============================================================
    FEEDBACK
    ============================================================ */
-const fbC = $('#fbCollapse'), fbText = $('#fbText'), fbSend = $('#fbSend');
+const fbText = $('#fbText');
 $$('.fb-btn').forEach(b => b.addEventListener('click', () => {
-  $$('.fb-btn').forEach(x => x.setAttribute('aria-pressed', x === b));
   $('#fbTitle').textContent = b.dataset.fb === 'si' ? 'Cosa ti è piaciuto?' : 'Qualcosa è andato storto?';
-  fbC.classList.add('open'); setTimeout(() => fbText.focus({ preventScroll: true }), 300);
+  $('#fbQ').hidden = true; $('#fbF').hidden = false;
+  setTimeout(() => fbText.focus({ preventScroll: true }), 50);
 }));
-fbText.addEventListener('input', () => { fbSend.disabled = !fbText.value.trim(); });
-fbSend.addEventListener('click', () => {
-  $('#fb').innerHTML = `<p class="fb-thanks reveal">Grazie per il tuo feedback!</p>`;
+$('#fbSend').addEventListener('click', () => {
+  $('#fbF').hidden = true; $('#fbE').hidden = false;
+  // il ringraziamento resta qualche secondo, poi il blocco si chiude (ricompare al ricaricamento)
+  setTimeout(() => { const w = $('#fbWrap'); w.classList.add('gone'); setTimeout(() => w.remove(), 600); }, 2500);
 });
 
 /* ============================================================
@@ -605,9 +607,9 @@ const FAQ = [
   ['Quali fattori influenzano l\'importo di mutuo che posso ottenere?', `<p>L’importo del mutuo dipende da diversi fattori, tra cui:</p><ul><li>Il tuo reddito mensile e la rata che puoi sostenere</li><li>La tipologia di contratto di lavoro che hai</li><li>La presenza di altri finanziamenti</li><li>La tua età</li><li>La durata del mutuo e il tasso applicato</li><li>L’anticipo che hai a disposizione</li><li>Il valore dell’immobile e la sua classe energetica</li></ul><p>Con il calcolatore puoi modificare durata, anticipo e altri parametri per vedere come cambia la stima del mutuo che potresti ottenere. Per conoscere con precisione quanto puoi richiedere richiedi una consulenza gratuita con un nostro esperto.</p>`],
 ];
 $('#faqList').innerHTML = FAQ.map(([q, a], i) => `
-  <div class="faq-item${i === 0 ? ' open' : ''}">
-    <button type="button" class="faq-q" aria-expanded="${i === 0}" aria-controls="faq-${i}">${q}${ICONS.chevDownFaq}</button>
-    <div class="collapse faq-a${i === 0 ? ' open' : ''}" id="faq-${i}"><div class="inner"><div class="txt">${a}</div></div></div>
+  <div class="faq-item">
+    <button type="button" class="faq-q" aria-expanded="false" aria-controls="faq-${i}">${q}${ICONS.chevDownFaq}</button>
+    <div class="collapse faq-a" id="faq-${i}"><div class="inner"><div class="txt">${a}</div></div></div>
   </div>`).join('');
 $('#faqList').addEventListener('click', e => {
   const q = e.target.closest('.faq-q'); if (!q) return;
