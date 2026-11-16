@@ -4,8 +4,7 @@
    CONFIG
    ============================================================ */
 const CFG = {
-  rrrMin: 25, rrrMax: 40, rrrDefault: 30, snaps: [30, 33, 40],
-  zones: [0.57, 0.215, 0.215],          // proporzioni visive verde/arancio/rosso (dal Figma)
+  rrrMin: 25, rrrMax: 40, rrrDefault: 30,
   ltvStd: 0.80, soglia100: 5000,        // anticipo < 5.000€ → LTV 100%
   sogliaElevato: 10000,                 // "Usa tutto l'anticipo" se il prezzo sale di almeno 10k
   greenSconto: 0.2,                     // punti di tasso in meno per immobile green
@@ -58,11 +57,12 @@ function compute(inp, rrr, useAll) {
   }
   const used = !!(useAll && elevato);
   if (used) {
+    // tutto l'anticipo viene usato: il residuo da arrotondamento (<200€) finisce nelle spese, così non avanza nulla
     prezzo = f100(prezzoMax);
-    spese = r100(speseAccessorie(prezzo, mutuo, mesi));
     anticipoCasa = prezzo - mutuo;
-    necessario = anticipoCasa + spese;
-    diff = Math.max(0, A - necessario);
+    spese = A - anticipoCasa;
+    necessario = A;
+    diff = 0;
   }
   const ltv = prezzo > 0 ? Math.round(mutuo / prezzo * 100) : 0;
   return { mutuo, prezzo, spese, anticipoCasa, necessario, diff, ltv, ltv100, elevato, used, A, rrr };
@@ -223,18 +223,13 @@ acList.addEventListener('mousedown', e => { const li = e.target.closest('li[data
 
 /* ---------- Avanzato, durata, green ---------- */
 const advToggle = $('#advToggle'), adv = $('#adv');
-function setAdv(open) { adv.classList.toggle('open', open); advToggle.setAttribute('aria-expanded', open); if (open) requestAnimationFrame(posSegThumb); }
+function setAdv(open) { adv.classList.toggle('open', open); advToggle.setAttribute('aria-expanded', open); }
 advToggle.addEventListener('click', () => setAdv(!adv.classList.contains('open')));
 const seg = $('#durata');
-function posSegThumb() {
-  const b = seg.querySelector(`[data-v="${S.durata}"]`); const th = seg.querySelector('.thumb');
-  if (!b || !b.offsetWidth) return;
-  th.style.width = b.offsetWidth + 'px'; th.style.transform = `translateX(${b.offsetLeft}px)`;
-}
 function setDurata(v, focus) {
   S.durata = v;
   $$('button', seg).forEach(b => { const on = +b.dataset.v === v; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
-  posSegThumb(); markDirty();
+  markDirty();
 }
 seg.addEventListener('click', e => { const b = e.target.closest('button'); if (b) setDurata(+b.dataset.v); });
 seg.addEventListener('keydown', e => {
@@ -282,11 +277,13 @@ function runCalc(v, { scroll, autoOpen, fromShare } = {}) {
     setAcc(els.antCard, r.diff < 0 || r.elevato);
     setAcc(els.mutuoCard, r.ltv100);
   }
-  if (scroll && window.innerWidth < 1024) {
+  if (scroll) {
+    // porta in vista i risultati: su desktop l'inizio della griglia, su mobile/tablet l'inizio dell'output
     setTimeout(() => {
-      const y = $('.price-block').getBoundingClientRect().top + scrollY - 72;
+      const target = window.innerWidth >= 1024 ? els.grid : $('.price-block');
+      const y = Math.max(0, target.getBoundingClientRect().top + scrollY - 80);
       scrollTo({ top: y, behavior: RM.matches ? 'auto' : 'smooth' });
-    }, first ? 120 : 0);
+    }, first ? 60 : 0);
   }
   if (!fromShare) history.replaceState(null, '', shareUrl());
 }
@@ -302,6 +299,7 @@ function update({ anim = false, first = false } = {}) {
   $('#rrr').classList.remove('disabled');
   $('#rrrThumb').tabIndex = 0;
   [els.mutuoCard, els.antCard].forEach(c => { c.classList.remove('disabled'); c.querySelector('.acc-head').disabled = false; });
+  $$('.dash').forEach(d => d.classList.remove('dash'));
   if (first) { els.cta.classList.remove('swap-hide'); els.cta.classList.add('reveal'); }
 
   const dur = anim ? 650 : 0;
@@ -368,15 +366,10 @@ function renderUnitView(first) {
 
 /* ---------- unit switch € / m² ---------- */
 const unitSw = $('#unitSw');
-function posUnitThumb() {
-  const b = unitSw.querySelector(`[data-u="${S.unit}"]`), th = unitSw.querySelector('.thumb');
-  th.style.width = b.offsetWidth + 'px'; th.style.transform = `translateX(${b.offsetLeft}px)`;
-}
 unitSw.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b || !S.applied || S.unit === b.dataset.u) return;
   S.unit = b.dataset.u;
   $$('button', unitSw).forEach(x => x.setAttribute('aria-checked', x === b));
-  posUnitThumb();
   const fadeEls = S.unit === 'mq' ? [els.tipoCard] : [els.mutuoCard, els.antCard];
   update({ anim: true });
   fadeEls.forEach(el => { el.classList.remove('fade-in'); void el.offsetWidth; el.classList.add('fade-in'); });
@@ -400,77 +393,65 @@ $('#useAll').addEventListener('change', e => {
 });
 
 /* ============================================================
-   SLIDER RRR — piecewise sulle zone colore + snap magnetico
+   SLIDER RRR — corsa del pallino interna al track (come Figma),
+   mappatura a tratti sulle zone colore, nessun aggancio magnetico
    ============================================================ */
 const rrrEl = $('#rrr'), track = $('#rrrTrack'), thumb = $('#rrrThumb'), tip = $('#rrrTip');
-const [G, O] = CFG.zones;
-const Z = [{ f0: 0, f1: G, v0: 25, v1: 30 }, { f0: G, f1: G + O, v0: 30, v1: 35 }, { f0: G + O, f1: 1, v0: 35, v1: 40 }];
-const v2f = v => { const z = Z.find(z => v <= z.v1) || Z[2]; return z.f0 + (v - z.v0) / (z.v1 - z.v0) * (z.f1 - z.f0); };
-const f2v = f => { const z = Z.find(z => f <= z.f1) || Z[2]; return z.v0 + (f - z.f0) / (z.f1 - z.f0) * (z.v1 - z.v0); };
-function layoutZones() {
-  const gap = window.innerWidth >= 768 ? 4 : 2; // metà gap tra segmenti
-  const [z1, z2, z3] = $$('.seg-z', track);
-  z1.style.left = '0'; z1.style.width = `calc(${G * 100}% - ${gap}px)`;
-  z2.style.left = `calc(${G * 100}% + ${gap}px)`; z2.style.width = `calc(${O * 100}% - ${gap * 2}px)`;
-  z3.style.left = `calc(${(G + O) * 100}% + ${gap}px)`; z3.style.width = `calc(${(1 - G - O) * 100}% - ${gap}px)`;
-  const labs = $$('#rrrLabels span');
-  labs[0].style.left = '0'; labs[1].style.left = `${G * 100}%`; labs[2].style.left = `${(G + O) * 100}%`;
+const R_PTR = 20; // raggio del pointer: il centro corre da 20px a (larghezza − 20px)
+function geo() {
+  const W = track.clientWidth;
+  const [z1, z2] = $$('.seg-z', track);
+  const gap = parseFloat(getComputedStyle(track).columnGap) || 8;
+  const b1 = z1.offsetWidth + gap / 2;                  // confine verde/arancio (30%)
+  const b2 = z2.offsetLeft + z2.offsetWidth + gap / 2;   // confine arancio/rosso (35%)
+  return [{ x0: R_PTR, x1: b1, v0: 25, v1: 30 }, { x0: b1, x1: b2, v0: 30, v1: 35 }, { x0: b2, x1: W - R_PTR, v0: 35, v1: 40 }];
 }
-function zoneOf(v) { return v <= 30.05 ? 1 : v <= 35 ? 2 : 3; }
+const v2x = v => { const Z = geo(); const z = Z.find(z => v <= z.v1) || Z[2]; return z.x0 + (v - z.v0) / (z.v1 - z.v0) * (z.x1 - z.x0); };
+const x2v = x => { const Z = geo(); x = Math.min(Z[2].x1, Math.max(Z[0].x0, x)); const z = Z.find(z => x <= z.x1) || Z[2]; return z.v0 + (x - z.x0) / (z.x1 - z.x0) * (z.v1 - z.v0); };
 function placeThumb(v, anim) {
   rrrEl.classList.toggle('anim', !!anim && !RM.matches);
-  thumb.style.left = (S.applied ? v2f(v) * 100 : 0) + '%';
-  const vr = Math.round(v * 10) / 10;
-  thumb.setAttribute('aria-valuenow', vr);
+  thumb.style.left = (S.applied ? v2x(v) : R_PTR) + 'px';
+  thumb.setAttribute('aria-valuenow', Math.round(v * 10) / 10);
   thumb.setAttribute('aria-valuetext', `Rata pari al ${Math.round(v)}% del reddito`);
-  tip.textContent = `Rata ${String(Math.round(v)).replace('.', ',')}% del reddito`;
-  const z = zoneOf(v);
-  $$('#rrrLabels span').forEach(s => s.classList.toggle('on', +s.dataset.z === z && !!S.applied));
+  tip.textContent = `Rata ${Math.round(v)}% del reddito`;
+  const x = S.applied ? v2x(v) : R_PTR, W = track.clientWidth;
+  tip.classList.toggle('edge-l', x < 80); tip.classList.toggle('edge-r', x > W - 80);
 }
-let dragging = false, lastSnap = null, rafPending = false;
-function setRrr(v, { snap = true } = {}) {
+let dragging = false, rafPending = false, grabOffset = 0;
+function setRrr(v) {
   v = Math.min(CFG.rrrMax, Math.max(CFG.rrrMin, v));
-  let snapped = null;
-  if (snap) for (const s of CFG.snaps) if (Math.abs(v - s) < 0.6) { v = s; snapped = s; }
-  if (snapped !== null && snapped !== lastSnap) { vibrate(8); thumb.classList.remove('snap'); void thumb.offsetWidth; thumb.classList.add('snap'); }
-  lastSnap = snapped;
   if (Math.abs(v - S.rrr) < 1e-6) return;
   S.rrr = v;
   placeThumb(v, false);
   if (!rafPending) { rafPending = true; requestAnimationFrame(() => { rafPending = false; update({ anim: false }); }); }
 }
-function fromPointer(e) {
-  const rect = track.getBoundingClientRect();
-  const f = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-  setRrr(f2v(f));
-}
+const localX = e => e.clientX - track.getBoundingClientRect().left;
 thumb.addEventListener('pointerdown', e => {
   if (!S.applied) return;
-  e.preventDefault(); thumb.setPointerCapture(e.pointerId); dragging = true; rrrEl.classList.add('dragging'); rrrEl.classList.remove('anim'); thumb.focus({ preventScroll: true });
+  e.preventDefault(); thumb.setPointerCapture(e.pointerId);
+  grabOffset = localX(e) - v2x(S.rrr);   // nessun salto: il pallino resta sotto il dito
+  dragging = true; rrrEl.classList.add('dragging'); rrrEl.classList.remove('anim'); thumb.focus({ preventScroll: true });
 });
-thumb.addEventListener('pointermove', e => { if (dragging) fromPointer(e); });
+thumb.addEventListener('pointermove', e => { if (dragging) setRrr(x2v(localX(e) - grabOffset)); });
 const endDrag = () => { if (!dragging) return; dragging = false; rrrEl.classList.remove('dragging'); history.replaceState(null, '', shareUrl()); };
 thumb.addEventListener('pointerup', endDrag); thumb.addEventListener('pointercancel', endDrag);
 track.addEventListener('pointerdown', e => {
   if (!S.applied || e.target.closest('.thumb-rrr')) return;
-  const rect = track.getBoundingClientRect();
-  const f = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-  let v = f2v(f); for (const s of CFG.snaps) if (Math.abs(v - s) < 0.6) v = s;
-  S.rrr = v; placeThumb(v, true); update({ anim: true }); history.replaceState(null, '', shareUrl());
+  S.rrr = x2v(localX(e)); placeThumb(S.rrr, true); update({ anim: true }); history.replaceState(null, '', shareUrl());
 });
 thumb.addEventListener('keydown', e => {
   if (!S.applied) return;
-  let v = S.rrr; const next = CFG.snaps.find(s => s > v + 0.01), prev = [...CFG.snaps].reverse().find(s => s < v - 0.01);
+  let v = S.rrr;
   switch (e.key) {
     case 'ArrowRight': case 'ArrowUp': v += 0.5; break;
     case 'ArrowLeft': case 'ArrowDown': v -= 0.5; break;
-    case 'PageUp': v = next ?? CFG.rrrMax; break;
-    case 'PageDown': v = prev ?? CFG.rrrMin; break;
+    case 'PageUp': v += 2.5; break;
+    case 'PageDown': v -= 2.5; break;
     case 'Home': v = CFG.rrrMin; break;
     case 'End': v = CFG.rrrMax; break;
     default: return;
   }
-  e.preventDefault(); setRrr(v, { snap: false }); history.replaceState(null, '', shareUrl());
+  e.preventDefault(); setRrr(v); history.replaceState(null, '', shareUrl());
 });
 
 /* ============================================================
@@ -495,8 +476,9 @@ function openSheet(title, html, cls = '') {
   lastFocus = document.activeElement;
   $('#sheetTitle').innerHTML = title; $('#sheetBody').innerHTML = html;
   sheet.className = 'sheet ' + cls; sheet.style.transform = '';
+  overlay.classList.toggle('center', cls === 'share');
   overlay.setAttribute('aria-hidden', 'false'); overlay.classList.add('open'); document.body.classList.add('lock');
-  setTimeout(() => $('#sheetClose').focus({ preventScroll: true }), 50);
+  setTimeout(() => (cls === 'share' ? $('#shareX') : $('#sheetClose')).focus({ preventScroll: true }), 50);
 }
 function closeSheet() {
   overlay.classList.remove('open'); overlay.setAttribute('aria-hidden', 'true'); document.body.classList.remove('lock');
@@ -523,7 +505,7 @@ document.addEventListener('keydown', e => {
 // swipe-down per chiudere il bottom sheet (mobile)
 (() => {
   let y0 = null, dy = 0;
-  sheet.addEventListener('touchstart', e => { if (window.innerWidth >= 768) return; if ($('#sheetBody').scrollTop > 0 && !e.target.closest('.sheet-head,.grab')) return; y0 = e.touches[0].clientY; dy = 0; }, { passive: true });
+  sheet.addEventListener('touchstart', e => { if (window.innerWidth >= 768 || sheet.classList.contains('share')) return; if ($('#sheetBody').scrollTop > 0 && !e.target.closest('.sheet-head,.grab')) return; y0 = e.touches[0].clientY; dy = 0; }, { passive: true });
   sheet.addEventListener('touchmove', e => { if (y0 == null) return; dy = Math.max(0, e.touches[0].clientY - y0); if (dy > 0) { sheet.classList.add('dragging'); sheet.style.transform = `translateY(${dy}px)`; } }, { passive: true });
   sheet.addEventListener('touchend', () => { if (y0 == null) return; sheet.classList.remove('dragging'); if (dy > 90) closeSheet(); else sheet.style.transform = ''; y0 = null; });
 })();
@@ -551,18 +533,23 @@ $('#shareBtn').addEventListener('click', async () => {
     return;
   }
   const enc = encodeURIComponent;
-  openSheet('Condividi risultati', `<div class="share-body">
-      <p class="sub">Copia il link per condividere i risultati con chi vuoi</p>
-      <div class="urlbox"><input readonly value="${url.replace(/"/g, '&quot;')}" aria-label="Link dei risultati" onfocus="this.select()"></div>
+  openSheet('Condividi risultati', `<button type="button" class="share-x" id="shareX" aria-label="Chiudi">${ICONS.close24}</button>
+    <div class="share-body">
+      <div class="share-content">
+        <div class="share-copy"><h2>Condividi risultati</h2><p>Copia il link per condividere i risultati con chi vuoi</p></div>
+        <div class="urlbox"><input readonly value="${url.replace(/"/g, '&quot;')}" aria-label="Link dei risultati" onfocus="this.select()"></div>
+      </div>
       <div class="share-acts">
         <a href="https://wa.me/?text=${enc(text + ' ' + url)}" target="_blank" rel="noopener"><span class="ic">${ICONS.shWa}</span>Whatsapp</a>
         <a href="mailto:?subject=${enc('Il mio calcolo mutuo')}&body=${enc(text + '\n' + url)}"><span class="ic">${ICONS.mail}</span>Email</a>
         <button type="button" id="copyLink"><span class="ic">${ICONS.shLink}</span><span class="lb">Copia Link</span></button>
-      </div></div>`, 'share');
+      </div>
+    </div>`, 'share');
+  $('#shareX').addEventListener('click', closeSheet);
   $('#copyLink').addEventListener('click', async e => {
     const b = e.currentTarget; await copyText(url);
-    b.classList.add('done'); b.querySelector('.lb').textContent = 'Link copiato';
-    setTimeout(() => { b.classList.remove('done'); b.querySelector('.lb').textContent = 'Copia Link'; }, CFG.copyFeedbackMs);
+    b.querySelector('.lb').textContent = 'Link copiato';
+    setTimeout(() => { b.querySelector('.lb').textContent = 'Copia Link'; }, CFG.copyFeedbackMs);
   });
 });
 function loadFromUrl() {
@@ -588,7 +575,6 @@ function loadFromUrl() {
   update({ anim: true, first: true });
   setAcc(els.antCard, S.result.diff < 0 || S.result.elevato);
   setAcc(els.mutuoCard, S.result.ltv100);
-  posUnitThumb();
   return true;
 }
 
@@ -658,10 +644,9 @@ $('#copyMail').addEventListener('click', async e => {
 els.tasso.value = String(CFG.tassoDefault).replace('.', ',');
 syncFilled(els.tasso);
 setDurata(CFG.durataDefault);
-layoutZones(); placeThumb(S.rrr, false);
-requestAnimationFrame(() => { posUnitThumb(); posSegThumb(); });
-document.fonts && document.fonts.ready.then(() => { posUnitThumb(); posSegThumb(); });
-let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { layoutZones(); posUnitThumb(); posSegThumb(); }, 80); });
+placeThumb(S.rrr, false);
+document.fonts && document.fonts.ready.then(() => placeThumb(S.rrr, false));
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => placeThumb(S.rrr, false), 60); });
 loadFromUrl();
 window.__calc = { compute, CFG, S }; // utile per debug in console
 })();
