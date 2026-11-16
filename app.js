@@ -72,6 +72,7 @@ function compute(inp, rrr, useAll) {
    UTILS
    ============================================================ */
 const $ = (s, el = document) => el.querySelector(s);
+const IS_V2 = window.CALC_VARIANT === 'v2';
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const fmt = n => Math.round(n).toLocaleString('it-IT', { useGrouping: 'always' }).replace(/\u00a0|\s/g, '.');
 const fmtEur = n => fmt(n) + '€';
@@ -360,9 +361,9 @@ function renderUnitView(first) {
   if (isMq && S.result) {
     const mq = mqFrom(S.result);
     const t = TIPI.find(x => mq <= x[0]);
-    $('#tipoVal').textContent = t[1];
+    $('#tipoVal').textContent = IS_V2 && t[2] === 5 ? '5+ Locali' : t[1];
     $('#cittaVal').textContent = S.applied.comune.nome;
-    $('#planIc').innerHTML = ICONS['loc' + t[2]];
+    $('#planIc').innerHTML = IS_V2 ? ICONS['tipo' + t[2]] : ICONS['loc' + t[2]];
   }
 }
 
@@ -420,13 +421,19 @@ function placeThumb(v, anim) {
   const x = S.applied ? v2x(v) : R_PTR, W = track.clientWidth;
   tip.classList.toggle('edge-l', x < 80); tip.classList.toggle('edge-r', x > W - 80);
 }
-let dragging = false, rafPending = false, grabOffset = 0;
+let dragging = false, rafPending = false, grabOffset = 0, kbT;
+const LIVE_SLIDER = window.CALC_VARIANT !== 'v2';
 function setRrr(v) {
   v = Math.min(CFG.rrrMax, Math.max(CFG.rrrMin, v));
   if (Math.abs(v - S.rrr) < 1e-6) return;
   S.rrr = v;
   placeThumb(v, false);
-  if (!rafPending) { rafPending = true; requestAnimationFrame(() => { rafPending = false; update({ anim: false }); }); }
+  if (LIVE_SLIDER) {
+    if (!rafPending) { rafPending = true; requestAnimationFrame(() => { rafPending = false; update({ anim: false }); }); }
+  } else if (!dragging) {
+    // variante B: aggiorna i numeri solo quando ci si ferma (anche da tastiera)
+    clearTimeout(kbT); kbT = setTimeout(() => update({ anim: true }), 280);
+  }
 }
 const localX = e => e.clientX - track.getBoundingClientRect().left;
 thumb.addEventListener('pointerdown', e => {
@@ -436,7 +443,7 @@ thumb.addEventListener('pointerdown', e => {
   dragging = true; rrrEl.classList.add('dragging'); rrrEl.classList.remove('anim'); thumb.focus({ preventScroll: true });
 });
 thumb.addEventListener('pointermove', e => { if (dragging) setRrr(x2v(localX(e) - grabOffset)); });
-const endDrag = () => { if (!dragging) return; dragging = false; rrrEl.classList.remove('dragging'); history.replaceState(null, '', shareUrl()); };
+const endDrag = () => { if (!dragging) return; dragging = false; rrrEl.classList.remove('dragging'); if (!LIVE_SLIDER) update({ anim: true }); history.replaceState(null, '', shareUrl()); };
 thumb.addEventListener('pointerup', endDrag); thumb.addEventListener('pointercancel', endDrag);
 track.addEventListener('pointerdown', e => {
   if (!S.applied || e.target.closest('.thumb-rrr')) return;
@@ -479,9 +486,9 @@ function openSheet(title, html, cls = '') {
   lastFocus = document.activeElement;
   $('#sheetTitle').innerHTML = title; $('#sheetBody').innerHTML = html;
   sheet.className = 'sheet ' + cls; sheet.style.transform = '';
-  overlay.classList.toggle('center', cls === 'share');
+  overlay.classList.toggle('center', cls === 'share' || cls === 'app');
   overlay.setAttribute('aria-hidden', 'false'); overlay.classList.add('open'); document.body.classList.add('lock');
-  setTimeout(() => (cls === 'share' ? $('#shareX') : $('#sheetClose')).focus({ preventScroll: true }), 50);
+  setTimeout(() => (cls === 'share' ? $('#shareX') : cls === 'app' ? sheet : $('#sheetClose')).focus({ preventScroll: true }), 50);
 }
 function closeSheet() {
   overlay.classList.remove('open'); overlay.setAttribute('aria-hidden', 'true'); document.body.classList.remove('lock');
@@ -545,7 +552,7 @@ $('#shareBtn').addEventListener('click', async () => {
   $('#shareX').addEventListener('click', closeSheet);
   $('#copyLink').addEventListener('click', async e => {
     const b = e.currentTarget; await copyText(url);
-    b.querySelector('.lb').textContent = 'Link copiato';
+    b.querySelector('.lb').textContent = 'Copiato';
     setTimeout(() => { b.querySelector('.lb').textContent = 'Copia Link'; }, CFG.copyFeedbackMs);
   });
 });
@@ -629,13 +636,33 @@ $('#copyMail').addEventListener('click', async e => {
     setTimeout(() => { lbl.innerHTML = ICONS.mail + '<span>Copia indirizzo</span>'; b.classList.remove('copied'); lbl.classList.remove('swap'); }, 160);
   }, CFG.copyFeedbackMs);
 });
-// Scarica l'app: store corretto in base al dispositivo
+// Scarica l'app: su mobile apre lo store, da 768px in su apre la modale con QR
 (() => {
+  const STORE = { ios: 'https://apps.apple.com/it/app/immobiliare-it-mutui/id1604084002', android: 'https://play.google.com/store/apps/details?id=it.mutuiamo.app' };
   const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/.test(ua);
   const a = $('#appLink');
-  if (/iPhone|iPad|iPod/.test(ua)) a.href = 'https://apps.apple.com/it/search?term=immobiliare.it%20mutui';
-  else if (/Android/.test(ua)) a.href = 'https://play.google.com/store/search?q=immobiliare.it%20mutui&c=apps';
+  if (isIOS) a.href = STORE.ios; else if (isAndroid) a.href = STORE.android;
+  a.addEventListener('click', e => {
+    if (window.innerWidth < 768) return;            // mobile: link diretto allo store
+    e.preventDefault();
+    openSheet('Scarica l’app', `<div class="app-modal">
+        <div class="app-copy"><span class="app-ic">${ICONS.appIcon}</span><h2>Scarica l'app</h2><p>Inquadra il codice QR per scaricare l’app gratuita</p></div>
+        ${ICONS.qr}
+      </div>`, 'app');
+  });
 })();
+
+/* variante B: nuova card "Stima tipo immobile" */
+if (IS_V2) {
+  const tc = $('#tipoCard');
+  tc.className = 'card tipo v2 swap-hide';
+  tc.innerHTML = `<div class="t2-text">
+      <div class="t2-blk"><p class="t2-k"><span class="lbl-m">Tipo immobile</span><span class="lbl-d">Stima tipo immobile</span></p><p class="t2-v" id="tipoVal">-</p></div>
+      <div class="t2-blk"><p class="t2-k"><span class="lbl-m">Città</span><span class="lbl-d">Città immobile</span></p><p class="t2-v" id="cittaVal">-</p></div>
+    </div><span class="t2-img" id="planIc" aria-hidden="true"></span>`;
+}
 
 /* ============================================================
    INIT

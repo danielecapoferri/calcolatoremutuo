@@ -73,7 +73,7 @@ body.lock{overflow:hidden}
 .control.filled .clear{display:grid;animation:popIn .2s var(--ease-out)}
 @keyframes popIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 .suffix{margin-left:auto}
-.control.has-suffix{padding-right:16px}
+
 .field.error .control{border-color:var(--error)}
 .field.error .control:focus-within{box-shadow:0 0 0 3px rgba(207,0,67,.08)}
 .err{font-size:14px;line-height:20px;color:var(--error);display:grid;grid-template-rows:0fr;transition:grid-template-rows .22s var(--ease-out),opacity .22s;opacity:0;margin-top:-8px}
@@ -529,4 +529,34 @@ body.lock{overflow:hidden}
 }
 @media (hover:none) and (min-width:768px){
   .cta-card:hover .btn{background:var(--primary-low)}
+}
+
+/* modale Scarica l'app (desktop/tablet) */
+.sheet.app{width:523px;max-width:100%;border-radius:20px;padding:64px;position:relative;transform:translateY(16px) scale(.96);opacity:0;transition:transform .35s var(--ease-out),opacity .25s}
+.overlay.open .sheet.app{transform:none;opacity:1}
+.sheet.app .sheet-head{display:none}
+.sheet.app .sheet-body{padding:0;overflow:visible}
+.app-modal{display:flex;align-items:center;justify-content:space-between;gap:40px}
+.app-copy{display:flex;flex-direction:column;align-items:flex-start;gap:0;min-width:0}
+.app-ic{width:48px;height:48px;border-radius:10px;background:var(--primary);display:grid;place-items:center;overflow:hidden;margin-bottom:12px}
+.app-ic svg{width:48px;height:48px;flex:none}
+.app-copy h2{margin:0 0 20px;font-size:32px;line-height:44px;font-weight:600;color:var(--c-high);letter-spacing:-.32px}
+.app-copy p{font-size:16px;line-height:26px;color:var(--c-low)}
+.qr{width:155px;height:155px;flex:none;display:block}
+
+.sheet:focus{outline:none}
+
+/* variante B — card "Stima tipo immobile" (Figma 24403:20051) */
+.tipo.v2{flex-direction:row;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px 16px 16px 20px}
+.t2-text{display:flex;flex-direction:column;gap:16px;min-width:0;flex:1}
+.t2-blk{display:flex;flex-direction:column;gap:2px}
+.t2-k{font-size:16px;line-height:26px;color:var(--c-med)}
+.t2-v{font-size:18px;line-height:28px;font-weight:500;color:var(--c-high)}
+.t2-img{width:128px;height:128px;flex:none;display:block}
+.t2-img svg{width:100%;height:100%;display:block}
+@media (min-width:768px){
+  .tipo.v2{padding:24px 24px 24px 32px;gap:24px}
+  .t2-text{gap:20px}
+  .t2-v{font-size:24px;line-height:34px}
+  .t2-img{width:144px;height:144px}
 }

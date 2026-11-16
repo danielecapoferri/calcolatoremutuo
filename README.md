@@ -23,3 +23,6 @@ Icone, logo e mascotte sono gli SVG esportati da Figma (file Website e Design Sy
 - Mutuo green: tasso −0,2 punti
 - Prezzi medi €/m²: Roma 3.300, Milano 5.300, Torino 2.000
 - Spese accessorie: funzione `speseAccessorie()`, regole dell'info point
+
+## Variante B (`/v2/`)
+La cartella `v2` contiene la seconda versione del calcolatore: stessi file di stile, script e asset della versione principale, ma i numeri si aggiornano solo quando si rilascia lo slider e la card “Stima tipo immobile” della vista m² ha il nuovo layout con planimetria. Online è raggiungibile aggiungendo `v2/` all'indirizzo della versione principale.
