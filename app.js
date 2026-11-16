@@ -546,14 +546,14 @@ $('#shareBtn').addEventListener('click', async () => {
       <div class="share-acts">
         <a href="https://wa.me/?text=${enc(text + ' ' + url)}" target="_blank" rel="noopener"><span class="ic">${ICONS.shWa}</span>Whatsapp</a>
         <a href="mailto:?subject=${enc('Il mio calcolo mutuo')}&body=${enc(text + '\n' + url)}"><span class="ic">${ICONS.mail}</span>Email</a>
-        <button type="button" id="copyLink"><span class="ic">${ICONS.shLink}</span><span class="lb">Copia Link</span></button>
+        <button type="button" id="copyLink"><span class="ic">${ICONS.shLink}</span><span class="lb"><span class="a">Copia Link</span><span class="b" aria-hidden="true">Copiato</span></span></button>
       </div>
     </div>`, 'share');
   $('#shareX').addEventListener('click', closeSheet);
   $('#copyLink').addEventListener('click', async e => {
     const b = e.currentTarget; await copyText(url);
-    b.querySelector('.lb').textContent = 'Copiato';
-    setTimeout(() => { b.querySelector('.lb').textContent = 'Copia Link'; }, CFG.copyFeedbackMs);
+    b.classList.add('done');
+    setTimeout(() => b.classList.remove('done'), CFG.copyFeedbackMs);
   });
 });
 function loadFromUrl() {
@@ -589,7 +589,7 @@ const fbText = $('#fbText');
 $$('.fb-btn').forEach(b => b.addEventListener('click', () => {
   $('#fbTitle').textContent = b.dataset.fb === 'si' ? 'Cosa ti è piaciuto?' : 'Qualcosa è andato storto?';
   $('#fbQ').hidden = true; $('#fbF').hidden = false;
-  setTimeout(() => fbText.focus({ preventScroll: true }), 50);
+  fbText.focus();   // sincrono nel tap: su iOS/Android apre anche la tastiera
 }));
 $('#fbSend').addEventListener('click', () => {
   $('#fbF').hidden = true; $('#fbE').hidden = false;
@@ -644,12 +644,23 @@ $('#copyMail').addEventListener('click', async e => {
   const isAndroid = /Android/.test(ua);
   const a = $('#appLink');
   if (isIOS) a.href = STORE.ios; else if (isAndroid) a.href = STORE.android;
+  // il QR punta a questa pagina con ?scarica-app: chi lo inquadra viene mandato allo store del suo telefono
+  if (new URLSearchParams(location.search).has('scarica-app')) {
+    location.replace(isAndroid ? STORE.android : STORE.ios);
+    return;
+  }
+  const qrSvg = () => {
+    try {
+      const q = qrcode(0, 'M'); q.addData(location.origin + location.pathname + '?scarica-app'); q.make();
+      return q.createSvgTag({ cellSize: 1, margin: 0, scalable: true }).replace('<svg ', '<svg class="qr" role="img" aria-label="Codice QR per scaricare l’app" shape-rendering="crispEdges" ');
+    } catch (e) { return ICONS.qr; }
+  };
   a.addEventListener('click', e => {
     if (window.innerWidth < 768) return;            // mobile: link diretto allo store
     e.preventDefault();
     openSheet('Scarica l’app', `<div class="app-modal">
         <div class="app-copy"><span class="app-ic">${ICONS.appIcon}</span><h2>Scarica l'app</h2><p>Inquadra il codice QR per scaricare l’app gratuita</p></div>
-        ${ICONS.qr}
+        ${qrSvg()}
       </div>`, 'app');
   });
 })();

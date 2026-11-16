@@ -560,3 +560,69 @@ body.lock{overflow:hidden}
   .t2-v{font-size:24px;line-height:34px}
   .t2-img{width:144px;height:144px}
 }
+
+/* ===================== Layout pagina come da Figma (sezioni, divisori, FAQ, contatti) ===================== */
+.share-acts .lb{display:grid}
+.share-acts .lb > span{grid-area:1/1;text-align:center;transition:opacity .15s}
+.share-acts .lb .b,.share-acts .done .lb .a{opacity:0}
+.share-acts .done .lb .b{opacity:1}
+
+.calc{padding:24px 16px 0}
+.sep{border:0;border-top:1px solid var(--border-static);margin:0}
+.sep-wrap{max-width:1280px;margin:48px auto 0;padding:0 32px}
+.fb-wrap .sep{margin:48px 16px 0}
+.fb{padding:48px 2px 2px}
+.fb-step.q{gap:16px}
+
+.faq{margin-top:48px;padding:0 16px}
+.faq-in{border-top:0;padding:0;gap:32px}
+.eyebrow{font-size:14px;line-height:24px;letter-spacing:0}
+.faq-head h2{margin:8px 0 0;font-size:24px;line-height:34px}
+.faq-item{padding:24px 0;border-bottom:1px solid var(--border-static)}
+.faq-item:first-child{padding-top:0}
+.faq-item:last-child{padding-bottom:0;border-bottom:0}
+.faq-q{padding:0;gap:24px;font-size:16px;line-height:26px}
+.faq-q svg{width:24px;height:24px}
+.faq-a .txt{padding:16px 0 0;font-size:14px;line-height:24px}
+
+.contacts{margin-top:48px;padding:0 16px 48px;background:linear-gradient(to bottom,rgba(245,247,249,0),#f5f7f9)}
+.contacts-in{max-width:1200px;gap:32px}
+.contacts-head h2{margin:8px 0 0;font-size:24px;line-height:34px}
+.ccards{grid-template-columns:1fr;gap:24px}
+.ccard{padding:24px;gap:24px;border-color:var(--border-static)}
+.ccard .copy{display:flex;flex-direction:column;gap:6px}
+.ccard h3{font-size:20px;line-height:32px}
+.ccard p{font-size:16px;line-height:26px}
+.ccard .btn{margin:0;height:44px;font-size:16px;line-height:26px;width:100%;border-radius:5px;padding:0 16px}
+.ccard .btn svg{width:24px;height:24px}
+
+@media (min-width:768px){
+  .calc{padding:40px 24px 0}
+  .m-only{display:none}
+  .fb{padding-top:64px}
+  .sep-wrap{margin-top:64px;padding:0 24px}
+  .faq{margin-top:64px;padding:0 24px}
+  .faq-in{display:grid;grid-template-columns:minmax(0,384fr) minmax(0,792fr);gap:24px;max-width:1200px;margin:0 auto}
+  .faq-head{text-align:left}
+  .faq-head h2{font-size:32px;line-height:44px}
+  .faq-q{font-size:20px;line-height:32px;min-height:48px}
+  .faq-a .txt{font-size:16px;line-height:26px}
+  .contacts{margin-top:64px;padding:0 24px 64px;background:linear-gradient(to bottom,rgba(245,247,249,0),rgba(245,247,249,.9))}
+  .contacts-in{gap:48px}
+  .contacts-head h2{font-size:32px;line-height:44px}
+  .ccards{grid-template-columns:1fr 1fr;gap:24px}
+  .ccard{padding:32px;gap:32px}
+  .ccard h3{font-size:24px;line-height:34px}
+  .ccard p{font-size:18px;line-height:28px}
+  .ccard .btn{width:200px;height:52px;border-radius:10px;align-self:flex-start;padding:0 24px}
+}
+@media (min-width:1024px){
+  .calc{padding:40px clamp(32px,5vw,64px) 0}
+  .fb{padding-top:88px}
+  .sep-wrap{margin-top:88px;padding:0 40px}
+  .faq{margin-top:104px;padding:0 40px}
+  .contacts{margin-top:104px;padding:0 40px 88px}
+  .ccard{padding:40px}
+}
+.br-d{display:none}
+@media (min-width:768px){.br-d{display:inline}.br-m{display:none}}
