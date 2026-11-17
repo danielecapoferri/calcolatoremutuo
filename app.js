@@ -274,7 +274,7 @@ function runCalc(v, { scroll, autoOpen, fromShare } = {}) {
   if (first) { S.useAll = false; }
   update({ anim: true, first });
   const r = S.result;
-  if (autoOpen) {
+  if (autoOpen && !IS_V2) {   // v2: i box restano come li ha lasciati l'utente
     setAcc(els.antCard, r.diff < 0 || r.elevato);
     setAcc(els.mutuoCard, r.ltv100);
   }
